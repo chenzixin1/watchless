@@ -2,3 +2,5 @@ requests
 moviepy
 Pillow
 openai
+numpy
+scikit-image

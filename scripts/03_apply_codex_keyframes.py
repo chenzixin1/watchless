@@ -29,14 +29,15 @@ def apply_selections(manifest_path: Path, selections: dict[str, int] | None = No
         times = scene.get("candidate_timestamps_sec") or []
         if not paths or len(paths) != len(times):
             raise ValueError(f"Scene {scene['id']} has invalid candidates")
-        default_index = len(paths) // 2 + 1
+        default_index = int(scene.get("preferred_candidate") or (len(paths) // 2 + 1))
         selected_index = int(selections.get(str(scene["id"]), default_index))
         if not 1 <= selected_index <= len(paths):
             raise ValueError(f"Scene {scene['id']} candidate {selected_index} is out of range")
         source = paths[selected_index - 1]
         seconds = float(times[selected_index - 1])
+        suffix = source.suffix.lower() if source.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp"} else ".jpg"
         destination = manifest_path.parent / "keyframes" / (
-            f"scene_{int(scene['id']):03d}_{format_timestamp(seconds).replace(':', '-')}.jpg"
+            f"scene_{int(scene['id']):03d}_{format_timestamp(seconds).replace(':', '-')}{suffix}"
         )
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, destination)

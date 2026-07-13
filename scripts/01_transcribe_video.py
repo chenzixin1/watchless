@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Extract audio and transcribe with Volcengine ASR or local Whisper."""
+"""Extract audio and transcribe with Volcengine ASR by default."""
 
 from __future__ import annotations
 
@@ -22,6 +22,8 @@ DEFAULT_RECOGNIZE_URL = "https://openspeech.bytedance.com/api/v3/auc/bigmodel/re
 DEFAULT_RESOURCE_ID = "volc.bigasr.auc_turbo"
 MAX_AUDIO_BYTES = 100 * 1024 * 1024
 MAX_AUDIO_SECONDS = 2 * 60 * 60
+LOCAL_CONFIG_ENV = "WATCHLESS_VOLCENGINE_CONFIG"
+LEGACY_LOCAL_CONFIG_ENV = "VIDEO_NOTES_VOLCENGINE_CONFIG"
 
 
 try:
@@ -54,7 +56,7 @@ def _redact_mapping(data):
     for key, value in data.items():
         lowered = str(key).lower()
         if any(token in lowered for token in ("key", "secret", "authorization", "token")):
-            redacted[key] = _redact_secret(value)
+            redacted[key] = "[REDACTED]"
         else:
             redacted[key] = value
     return redacted
@@ -66,6 +68,77 @@ def _configured_value(*names, default=None):
         if value and not str(value).startswith("YOUR_"):
             return str(value)
     return default
+
+
+def _usable_secret(value):
+    return bool(value) and not str(value).startswith("YOUR_")
+
+
+def _load_config_file(path):
+    """Load a local Python config without adding it to sys.path."""
+    path = Path(path).expanduser()
+    if not path.is_file():
+        return None
+    spec = importlib.util.spec_from_file_location(f"watchless_local_config_{uuid.uuid4().hex}", path)
+    if spec is None or spec.loader is None:
+        return None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def local_config_candidates(explicit_path=None):
+    """Return safe, deterministic locations used by prior local installs."""
+    candidates = []
+    if explicit_path:
+        candidates.append(Path(explicit_path).expanduser())
+    for env_name in (LOCAL_CONFIG_ENV, LEGACY_LOCAL_CONFIG_ENV):
+        if os.environ.get(env_name):
+            candidates.append(Path(os.environ[env_name]).expanduser())
+
+    home = Path.home()
+    candidates.extend(
+        [
+            home / ".config" / "watchless" / "config.py",
+            home / ".codex" / "skills" / "watchless" / "scripts" / "config.py",
+            home / ".config" / "video-notes-maker" / "config.py",
+            home / ".codex" / "skills" / "video-notes-maker" / "scripts" / "config.py",
+        ]
+    )
+    unique = []
+    seen = set()
+    for candidate in candidates:
+        resolved = candidate.resolve()
+        if resolved not in seen:
+            seen.add(resolved)
+            unique.append(resolved)
+    return unique
+
+
+def resolve_volcengine_credentials(cli_api_key=None, cli_app_key=None, config_path=None):
+    """Resolve credentials without copying or printing secret values."""
+    if _usable_secret(cli_api_key):
+        return str(cli_api_key), str(cli_app_key or ""), "command line"
+
+    env_key = os.environ.get("VOLCENGINE_API_KEY") or os.environ.get("VOLCENGINE_ACCESS_KEY")
+    env_app = os.environ.get("VOLCENGINE_APP_KEY", "")
+    if _usable_secret(env_key):
+        return env_key, env_app, "environment"
+
+    configured_key = _configured_value("VOLCENGINE_API_KEY", "ACCESS_KEY")
+    configured_app = _configured_value("APP_KEY", default="")
+    if _usable_secret(configured_key):
+        return configured_key, configured_app, "scripts/config.py"
+
+    for candidate in local_config_candidates(config_path):
+        module = _load_config_file(candidate)
+        if module is None:
+            continue
+        key = getattr(module, "VOLCENGINE_API_KEY", None) or getattr(module, "ACCESS_KEY", None)
+        if _usable_secret(key):
+            app_key = getattr(module, "APP_KEY", "")
+            return str(key), str(app_key or ""), f"local config: {candidate}"
+    return None, None, None
 
 
 def _normalize_language(language):
@@ -107,11 +180,10 @@ def select_transcription_provider(requested, api_key):
         raise ValueError(f"Unknown transcription provider: {requested}")
     if api_key:
         return "volcengine"
-    if local_whisper_available():
-        return "whisper"
     raise RuntimeError(
-        "Volcengine key is missing and local openai-whisper is not installed; "
-        "run `pip install -r scripts/requirements-whisper.txt`"
+        "Volcengine key is missing. Set VOLCENGINE_API_KEY, pass --api-key, or point "
+        f"{LOCAL_CONFIG_ENV} at an existing config.py. Whisper is used only when "
+        "--provider whisper is explicitly requested."
     )
 
 
@@ -225,6 +297,57 @@ def save_transcript(result, output_file=None, srt_output_file=None):
             print("Warning: No utterance timestamps returned; SRT was not created.")
 
 
+def normalized_word_transcript(result, provider="volcengine"):
+    """Return the word-level schema consumed by video-use helpers."""
+    words = []
+    for utterance in result.get("result", {}).get("utterances", []) or []:
+        speaker = utterance.get("speaker")
+        if speaker in (None, ""):
+            speaker = utterance.get("additions", {}).get("speaker")
+        if speaker in (None, ""):
+            speaker_id = None
+        else:
+            speaker_text = str(speaker)
+            speaker_id = speaker_text if speaker_text.startswith("speaker_") else f"speaker_{speaker_text}"
+        utterance_words = utterance.get("words") or []
+        if utterance_words:
+            for word in utterance_words:
+                text = (word.get("text") or "").strip()
+                start_ms = word.get("start_time")
+                end_ms = word.get("end_time")
+                if not text or start_ms is None or end_ms is None:
+                    continue
+                item = {
+                    "text": text,
+                    "type": "word",
+                    "start": float(start_ms) / 1000.0,
+                    "end": float(end_ms) / 1000.0,
+                }
+                if speaker_id:
+                    item["speaker_id"] = speaker_id
+                words.append(item)
+        else:
+            text = (utterance.get("text") or "").strip()
+            start_ms = utterance.get("start_time")
+            end_ms = utterance.get("end_time")
+            if text and start_ms is not None and end_ms is not None:
+                item = {
+                    "text": text,
+                    "type": "word",
+                    "start": float(start_ms) / 1000.0,
+                    "end": float(end_ms) / 1000.0,
+                }
+                if speaker_id:
+                    item["speaker_id"] = speaker_id
+                words.append(item)
+    words.sort(key=lambda item: (item["start"], item["end"]))
+    return {
+        "text": result.get("result", {}).get("text", ""),
+        "words": words,
+        "metadata": {"provider": provider, "word_timestamps": True},
+    }
+
+
 class AudioTranscriber:
     def __init__(
         self,
@@ -324,7 +447,7 @@ class AudioTranscriber:
         if language:
             audio["language"] = language
         payload = {
-            "user": {"uid": self.app_key or "session-notes-maker"},
+            "user": {"uid": self.app_key or "watchless"},
             "audio": audio,
             "request": {
                 "model_name": "bigmodel",
@@ -425,19 +548,24 @@ class LocalWhisperTranscriber(AudioTranscriber):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Transcribe local audio/video with Volcengine ASR or local Whisper fallback."
+        description="Transcribe local audio/video with Volcengine ASR (Whisper is explicit fallback only)."
     )
     parser.add_argument("input_file", help="Path to a local audio or video file")
     parser.add_argument("--output", "-o", help="Transcript text output path")
     parser.add_argument("--srt-output", help="Optional SRT subtitle output path")
+    parser.add_argument("--json-output", help="Optional video-use-compatible word-level JSON")
     parser.add_argument("--api-key", help="New-console Volcengine API key")
     parser.add_argument("--access-key", help="API key, or old-console access token")
     parser.add_argument("--app-key", help="Old-console App ID/App Key")
     parser.add_argument(
+        "--volcengine-config",
+        help=f"Existing local config.py; can also be set with {LOCAL_CONFIG_ENV}",
+    )
+    parser.add_argument(
         "--provider",
         choices=["auto", "volcengine", "whisper"],
-        default="auto",
-        help="auto prefers Volcengine when a key exists, otherwise local Whisper",
+        default="volcengine",
+        help="Volcengine is the default; Whisper must be requested explicitly",
     )
     parser.add_argument(
         "--whisper-model",
@@ -459,8 +587,11 @@ def main():
     parser.add_argument("--timeout", type=int, default=1800, help="HTTP timeout in seconds")
     args = parser.parse_args()
 
-    app_key = args.app_key or _configured_value("APP_KEY")
-    api_key = args.api_key or args.access_key or _configured_value("VOLCENGINE_API_KEY", "ACCESS_KEY")
+    api_key, app_key, credential_source = resolve_volcengine_credentials(
+        cli_api_key=args.api_key or args.access_key,
+        cli_app_key=args.app_key,
+        config_path=args.volcengine_config,
+    )
     try:
         provider = select_transcription_provider(args.provider, api_key)
     except (RuntimeError, ValueError) as exc:
@@ -469,6 +600,7 @@ def main():
     if provider == "volcengine":
         transcriber = AudioTranscriber(api_key=api_key, app_key=app_key, timeout=args.timeout)
         print("Transcription provider: Volcengine ASR Flash")
+        print(f"Credential source: {credential_source}")
     else:
         transcriber = LocalWhisperTranscriber(
             model_name=args.whisper_model,
@@ -485,6 +617,15 @@ def main():
             show_utterances=not args.no_utterances,
         )
         save_transcript(result, args.output, args.srt_output)
+        if args.json_output:
+            json_path = Path(args.json_output)
+            json_path.parent.mkdir(parents=True, exist_ok=True)
+            json_path.write_text(
+                json.dumps(normalized_word_transcript(result, provider=provider), ensure_ascii=False, indent=2)
+                + "\n",
+                encoding="utf-8",
+            )
+            print(f"Word-level transcript saved to: {json_path}")
     except Exception as exc:
         print(f"Error: {exc}")
         return 1

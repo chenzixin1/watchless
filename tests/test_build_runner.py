@@ -35,3 +35,66 @@ def test_relocate_acquisition_paths_after_project_rename(tmp_path):
     assert repaired["local_video"] == str(video.resolve())
     assert repaired["subtitle"] == str(subtitle.resolve())
     assert repaired["info_json"] == str(info.resolve())
+
+
+def test_route_decision_normalizes_alias_and_preserves_strategies(tmp_path):
+    module = load_module()
+    project = tmp_path / "project"
+    decision = module.save_route_decision(
+        project,
+        "presentation",
+        strategies=["slide-state"],
+        reasons=["stable slide region"],
+    )
+    assert decision["selected"] == "slides"
+    assert decision["visual_strategies"] == ["slide-state"]
+    assert (project / "work" / "route-decision.json").is_file()
+
+
+def test_conversation_route_records_profile(tmp_path):
+    module = load_module()
+    decision = module.save_route_decision(
+        tmp_path,
+        "conversation",
+        strategies=["speaker", "evidence"],
+        conversation_profile="news",
+    )
+    assert decision["conversation_profile"] == "news"
+
+
+def test_non_conversation_route_rejects_conversation_profile(tmp_path):
+    module = load_module()
+    try:
+        module.save_route_decision(tmp_path, "explainer", conversation_profile="news")
+    except ValueError as exc:
+        assert "only valid" in str(exc)
+    else:
+        raise AssertionError("non-conversation routes must reject conversation profiles")
+
+
+def test_source_chapters_are_normalized(tmp_path):
+    module = load_module()
+    info = tmp_path / "source.info.json"
+    info.write_text(
+        '{"chapters":[{"start_time":0,"end_time":75,"title":"开场"},'
+        '{"start_time":75,"end_time":75,"title":"无效"}]}',
+        encoding="utf-8",
+    )
+    assert module.source_chapters({"info_json": str(info)}) == [
+        {"start_sec": 0.0, "end_sec": 75.0, "title": "开场"}
+    ]
+
+
+def test_auto_route_requires_confirmed_decision(tmp_path):
+    module = load_module()
+    args = type(
+        "Args",
+        (),
+        {"visual_strategy": None, "mode_reason": None, "conversation_profile": None},
+    )()
+    try:
+        module.resolve_route(tmp_path, "auto", args)
+    except RuntimeError as exc:
+        assert "requires Codex confirmation" in str(exc)
+    else:
+        raise AssertionError("auto routing should require an explicit Codex-confirmed route")

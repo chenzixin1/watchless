@@ -51,7 +51,7 @@ def prepare_overview(video: Path, verify_dir: Path, samples: int = 16) -> dict:
         "sample_timestamps_sec": [round(value, 3) for value in timestamps],
         "media": metadata,
         "overview": str(overview.resolve()),
-        "decision_rule": "Codex directly inspects the contact sheet. Talking-head, interview, B-roll, or ambiguous video uses editorial; stable slide-led video uses presentation.",
+        "decision_rule": "Codex inspects the whole-video overview and transcript, then confirms one route: stable slide-led lectures use slides; scripted visual arguments use explainer; interviews and podcasts use conversation; step-by-step UI or physical workflows use demo. Add composable visual strategies such as speaker, evidence, broll, dense-visual, document-evidence, or screen-state.",
     }
     write_json(verify_dir / "mode-evidence.json", evidence)
     emit_progress("mode", "ready", image=str(overview), suggested_mode="codex_review_required")

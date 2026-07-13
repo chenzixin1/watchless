@@ -1,10 +1,5 @@
 # Third-Party Notices
 
-## Session Notes Maker
-
-This repository preserves and evolves the Git history and scripts from
-`https://github.com/chenzixin1/session-notes-maker`.
-
 ## Video Use
 
 The transcript-first reasoning, on-demand timeline inspection, conversation
@@ -14,4 +9,6 @@ progress, and visual self-review concepts are informed by:
 - License: MIT
 - Copyright: Browser Use, 2026
 
-No runtime dependency on `video-use` is required.
+Watchless expects a local `video-use` checkout for transcript packing and
+on-demand timeline inspection. It does not copy `video-use` source code into
+this repository.

@@ -11,7 +11,7 @@ SCRIPT_PATH = Path(__file__).resolve().parents[1] / "scripts" / "01_transcribe_v
 
 
 def load_module():
-    spec = importlib.util.spec_from_file_location("session_notes_transcribe", SCRIPT_PATH)
+    spec = importlib.util.spec_from_file_location("watchless_transcribe", SCRIPT_PATH)
     module = importlib.util.module_from_spec(spec)
     sys.path.insert(0, str(SCRIPT_PATH.parent))
     try:
@@ -84,15 +84,29 @@ class DirectUploadTests(unittest.TestCase):
             provider = self.module.select_transcription_provider("auto", "configured-key")
         self.assertEqual(provider, "volcengine")
 
-    def test_auto_provider_falls_back_to_local_whisper_without_key(self):
+    def test_auto_provider_requires_volcengine_key(self):
         with patch.object(self.module, "local_whisper_available", return_value=True):
-            provider = self.module.select_transcription_provider("auto", None)
-        self.assertEqual(provider, "whisper")
-
-    def test_missing_key_and_whisper_returns_actionable_error(self):
-        with patch.object(self.module, "local_whisper_available", return_value=False):
-            with self.assertRaisesRegex(RuntimeError, "openai-whisper"):
+            with self.assertRaisesRegex(RuntimeError, "Whisper is used only"):
                 self.module.select_transcription_provider("auto", None)
+
+    def test_local_config_credentials_are_discovered_without_exposing_value(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            config_path = Path(tmp) / "config.py"
+            config_path.write_text(
+                'ACCESS_KEY = "local-secret"\nAPP_KEY = "local-app"\n', encoding="utf-8"
+            )
+            key, app_key, source = self.module.resolve_volcengine_credentials(
+                config_path=config_path
+            )
+        self.assertEqual(key, "local-secret")
+        self.assertEqual(app_key, "local-app")
+        self.assertIn("local config", source)
+
+    def test_default_config_candidates_are_watchless_first_and_session_independent(self):
+        candidates = self.module.local_config_candidates()
+        expected = Path.home() / ".config" / "watchless" / "config.py"
+        self.assertIn(expected.resolve(), candidates)
+        self.assertFalse(any("session-notes-maker" in str(path) for path in candidates))
 
     def test_local_whisper_result_matches_existing_transcript_schema(self):
         class FakeModel:
@@ -134,6 +148,43 @@ class DirectUploadTests(unittest.TestCase):
         )
         self.assertEqual(fake_whisper.model_name, "small")
         self.assertEqual(fake_whisper.model.kwargs["language"], "zh")
+
+    def test_volcengine_result_normalizes_words_and_speakers_for_video_use(self):
+        normalized = self.module.normalized_word_transcript(
+            {
+                "result": {
+                    "text": "你好",
+                    "utterances": [
+                        {
+                            "speaker": "2",
+                            "words": [
+                                {"text": "你", "start_time": 100, "end_time": 200},
+                                {"text": "好", "start_time": 210, "end_time": 300},
+                            ],
+                        }
+                    ],
+                }
+            }
+        )
+        self.assertEqual([word["speaker_id"] for word in normalized["words"]], ["speaker_2", "speaker_2"])
+        self.assertEqual(normalized["words"][0]["start"], 0.1)
+
+    def test_existing_speaker_prefix_is_not_duplicated(self):
+        normalized = self.module.normalized_word_transcript(
+            {
+                "result": {
+                    "utterances": [
+                        {
+                            "speaker": "speaker_3",
+                            "text": "测试",
+                            "start_time": 0,
+                            "end_time": 100,
+                        }
+                    ]
+                }
+            }
+        )
+        self.assertEqual(normalized["words"][0]["speaker_id"], "speaker_3")
 
 
 if __name__ == "__main__":

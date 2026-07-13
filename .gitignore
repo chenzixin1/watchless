@@ -4,4 +4,6 @@ __pycache__/
 .pytest_cache/
 outputs/
 scripts/logs/
+scripts/.audiocache/
+.wrangler/
 .DS_Store

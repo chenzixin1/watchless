@@ -36,7 +36,7 @@ TEMP_AUDIO_SUFFIX = "_temp"
 TRANSCRIPT_SUFFIX = "_transcript.txt"
 
 # [whisper]
-# Used automatically when VOLCENGINE_API_KEY is not configured.
+# Explicit fallback only: pass --provider whisper.
 WHISPER_MODEL = "small"
 WHISPER_LANGUAGE = "zh"
 
@@ -233,7 +233,7 @@ TRANSCRIPTION_USER_PROMPT = """Please transcribe the attached audio file accurat
 
 # Volcano Engine API Configuration
 
-# API key（可选；未配置时自动使用本地 Whisper）
+# API key（推荐；也可通过环境变量或 WATCHLESS_VOLCENGINE_CONFIG 指向本地配置）
 VOLCENGINE_API_KEY = "YOUR_VOLCENGINE_API_KEY"
 # 旧版控制台如需双字段鉴权，再填写 APP_KEY，并把 Access Token 填到 ACCESS_KEY。
 APP_KEY = ""
