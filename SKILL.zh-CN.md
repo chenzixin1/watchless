@@ -5,6 +5,8 @@ description: 将 YouTube 链接或本地的 PPT、科普、访谈、播客、产
 
 # Watchless 中文审阅版
 
+> [English](SKILL.md) | [简体中文](SKILL.zh-CN.md)
+
 > 本文件是正式入口 `SKILL.md` 的完整中文审阅稿。
 
 把一段视频转换成完整的图文文章。转录稿是事实来源，截图负责保存视觉证据。读者不应再需要观看原视频。

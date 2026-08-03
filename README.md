@@ -1,5 +1,7 @@
 # Watchless
 
+> [简体中文](README.md) | [English](README.en.md)
+
 > **Watch less. Understand more.**
 
 ![Watchless：从在线视频到完整可读文档](assets/watchless-hero.png)

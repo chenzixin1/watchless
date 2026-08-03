@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1080" viewBox="0 0 1600 1080" role="img" aria-labelledby="title desc">
+  <title id="title">Watchless workflow</title>
+  <desc id="desc">Local Codex video-processing workflow from source video to audited HTML, PDF, and ZIP outputs.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f7fbff"/>
+      <stop offset="1" stop-color="#eef4f8"/>
+    </linearGradient>
+    <linearGradient id="head" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0f766e"/>
+      <stop offset="1" stop-color="#0e7490"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#16324f" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#0f766e"/>
+    </marker>
+    <style>
+      .font { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #172033; }
+      .title { font-size: 46px; font-weight: 800; letter-spacing: 1px; }
+      .subtitle { font-size: 22px; fill: #526176; }
+      .section { font-size: 25px; font-weight: 800; fill: #ffffff; }
+      .label { font-size: 20px; font-weight: 700; }
+      .small { font-size: 18px; fill: #526176; }
+      .tiny { font-size: 16px; fill: #526176; }
+      .card { fill: #ffffff; stroke: #d5e1ea; stroke-width: 2; }
+      .route-title { font-size: 21px; font-weight: 800; }
+      .route-copy { font-size: 17px; fill: #526176; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1080" fill="url(#bg)"/>
+  <circle cx="1450" cy="80" r="240" fill="#d9f3ef" opacity="0.55"/>
+  <circle cx="90" cy="1020" r="250" fill="#dcecfb" opacity="0.65"/>
+
+  <text x="80" y="82" class="font title">Watchless</text>
+  <text x="82" y="124" class="font subtitle">Watch less. Understand more. Turn videos into complete visual articles.</text>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="175" width="270" height="230" rx="22" class="card"/>
+    <rect x="70" y="175" width="270" height="55" rx="22" fill="#0f766e"/>
+    <rect x="70" y="208" width="270" height="22" fill="#0f766e"/>
+    <text x="205" y="211" text-anchor="middle" class="font section">Input</text>
+    <text x="100" y="278" class="font label">YouTube URL</text>
+    <text x="100" y="312" class="font small">or local video.mp4</text>
+    <text x="100" y="353" class="font small">subtitles / metadata / video</text>
+    <text x="100" y="382" class="font tiny">Source stays immutable; runs reuse cache</text>
+  </g>
+
+  <path d="M350 290 H420" fill="none" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="435" y="175" width="345" height="230" rx="22" class="card"/>
+    <rect x="435" y="175" width="345" height="55" rx="22" fill="#f59e0b"/>
+    <rect x="435" y="208" width="345" height="22" fill="#f59e0b"/>
+    <text x="607" y="211" text-anchor="middle" class="font section">Prepare</text>
+    <text x="470" y="279" class="font label">Download + subs + overview</text>
+    <text x="470" y="315" class="font small">local yt-dlp / ffmpeg</text>
+    <text x="470" y="345" class="font small">Volcengine word-level ASR</text>
+    <text x="470" y="375" class="font small">mode-overview.jpg + transcript</text>
+  </g>
+
+  <path d="M790 290 H860" fill="none" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="875" y="175" width="330" height="230" rx="22" class="card"/>
+    <rect x="875" y="175" width="330" height="55" rx="22" fill="#2563eb"/>
+    <rect x="875" y="208" width="330" height="22" fill="#2563eb"/>
+    <text x="1040" y="211" text-anchor="middle" class="font section">Codex review</text>
+    <text x="910" y="279" class="font label">Read images + text + choose route</text>
+    <text x="910" y="315" class="font small">Content structure sets boundaries</text>
+    <text x="910" y="345" class="font small">speakers / evidence / B-roll / UI</text>
+    <text x="910" y="375" class="font small">Select what a keyframe must show</text>
+  </g>
+
+  <path d="M1215 290 H1280" fill="none" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="1295" y="175" width="235" height="230" rx="22" class="card"/>
+    <rect x="1295" y="175" width="235" height="55" rx="22" fill="#7c3aed"/>
+    <rect x="1295" y="208" width="235" height="22" fill="#7c3aed"/>
+    <text x="1412" y="211" text-anchor="middle" class="font section">Audit</text>
+    <text x="1325" y="279" class="font label">Transcript</text>
+    <text x="1325" y="315" class="font small">image references</text>
+    <text x="1325" y="345" class="font small">PDF pages</text>
+    <text x="1325" y="375" class="font small">ZIP contents</text>
+  </g>
+
+  <text x="80" y="470" class="font label">Four routes selected by content structure</text>
+  <text x="80" y="504" class="font small">Only the slides route uses SSIM. Codex reads candidate frames directly on all other routes.</text>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="540" width="340" height="230" rx="20" class="card"/>
+    <rect x="70" y="540" width="340" height="16" rx="8" fill="#0f766e"/>
+    <text x="100" y="600" class="font route-title" fill="#0f766e">SLIDES</text>
+    <text x="100" y="635" class="font label">Slides / fixed region</text>
+    <text x="100" y="673" class="font route-copy">H.264 keyframe recall</text>
+    <text x="100" y="701" class="font route-copy">fixed-region SSIM refinement</text>
+    <text x="100" y="729" class="font route-copy">complete page / build state</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="435" y="540" width="340" height="230" rx="20" class="card"/>
+    <rect x="435" y="540" width="340" height="16" rx="8" fill="#f59e0b"/>
+    <text x="465" y="600" class="font route-title" fill="#d97706">EXPLAINER</text>
+    <text x="465" y="635" class="font label">Paper / explainer / doc</text>
+    <text x="465" y="673" class="font route-copy">semantic arguments and examples</text>
+    <text x="465" y="701" class="font route-copy">dense-visual + evidence</text>
+    <text x="465" y="729" class="font route-copy">charts, documents, maps, B-roll</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="800" y="540" width="340" height="230" rx="20" class="card"/>
+    <rect x="800" y="540" width="340" height="16" rx="8" fill="#2563eb"/>
+    <text x="830" y="600" class="font route-title" fill="#2563eb">CONVERSATION</text>
+    <text x="830" y="635" class="font label">Interview / podcast / panel</text>
+    <text x="830" y="673" class="font route-copy">complete Q&amp;A / topic unit</text>
+    <text x="830" y="701" class="font route-copy">speaker map + profile</text>
+    <text x="830" y="729" class="font route-copy">studio / edited / news / chaptered</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="1165" y="540" width="340" height="230" rx="20" class="card"/>
+    <rect x="1165" y="540" width="340" height="16" rx="8" fill="#7c3aed"/>
+    <text x="1195" y="600" class="font route-title" fill="#7c3aed">DEMO</text>
+    <text x="1195" y="635" class="font label">UI / product / tutorial</text>
+    <text x="1195" y="673" class="font route-copy">goal → action → result</text>
+    <text x="1195" y="701" class="font route-copy">screen-state + evidence</text>
+    <text x="1195" y="729" class="font route-copy">prefer a clear completed UI</text>
+  </g>
+
+  <path d="M240 770 V815 M605 770 V815 M970 770 V815 M1335 770 V815 M240 815 H1335" fill="none" stroke="#0f766e" stroke-width="4"/>
+  <path d="M800 815 V842" fill="none" stroke="#0f766e" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="160" y="850" width="1280" height="150" rx="24" fill="url(#head)"/>
+    <text x="800" y="900" text-anchor="middle" class="font section">Output: keyframes + Light-plus + Visual Explainer</text>
+    <text x="800" y="940" text-anchor="middle" class="font" style="font-size:21px;fill:#d8fffa">HTML  ·  PDF  ·  ZIP  ·  quality-audit.json  ·  reviewable local project</text>
+    <text x="800" y="972" text-anchor="middle" class="font" style="font-size:17px;fill:#d8fffa">Read image → text in sequence, without replaying the entire video</text>
+  </g>
+</svg>

@@ -1,5 +1,7 @@
 # 完整视频理解 Skill 命名方案
 
+> [简体中文](naming-options.zh-CN.md) | [English](naming-options.md)
+
 > 最终选择：**Watchless**（Skill 与 GitHub slug：`watchless`）
 
 ## 产品机会

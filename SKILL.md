@@ -5,6 +5,8 @@ description: Use when turning a YouTube URL or local presentation, explainer, in
 
 # Watchless
 
+> [English](SKILL.md) | [简体中文](SKILL.zh-CN.md)
+
 Turn one video into a complete visual article. The transcript is the factual source; screenshots preserve the visual evidence. The reader should not need to watch the original video.
 
 ## Hard Requirements
@@ -16,7 +18,7 @@ Turn one video into a complete visual article. The transcript is the factual sou
 - Show process images during the run: whole-video route overview, boundary evidence where applicable, candidate frames, selected frames, and PDF page overview.
 - Use no OpenCV anywhere in this Skill.
 - Visual algorithms are route-specific. `slides` uses ffmpeg keyframe recall plus local SSIM refinement. `explainer`, `conversation`, and `demo` do not use SSIM, perceptual hash, histogram scoring, face scoring, or other visual ranking; Codex directly reads their candidate images.
-- Resolve speaker identities for every `conversation` video before writing notes. Keep `说话人N` when evidence remains weak or conflicting.
+- Resolve speaker identities for every `conversation` video before writing notes. Keep `Speaker N` when evidence remains weak or conflicting.
 - Record model token usage and cost in `work/token-usage.json` whenever the runtime exposes real counts. Never invent unavailable usage or silently apply stale prices.
 - Do not claim completion until HTML image references, rendered PDF pages, and ZIP contents pass verification.
 
@@ -28,10 +30,10 @@ Before acquiring a remote source, confirm that the user owns the content, has pe
 - Chrome browser cookies may be read only from the user's local browser profile. Never export, print, copy, upload, log, or commit cookie values. Cookie access does not establish a right to download or reuse content.
 - Never use this Skill to bypass DRM, paywalls, members-only access, private-video access, geographic restrictions, CAPTCHAs, account enforcement, or other access controls.
 - Before sending non-public or sensitive audio to Volcengine, confirm that the user is authorized to make that third-party transfer. Use explicitly requested local Whisper or stop when authorization is unavailable.
-- Resolve speaker names only from explicit public metadata, self-introduction, lower thirds, or similarly reliable evidence. Do not perform face or voice biometric identification. Keep `说话人N` when uncertain and require human review before external use.
+- Resolve speaker names only from explicit public metadata, self-introduction, lower thirds, or similarly reliable evidence. Do not perform face or voice biometric identification. Keep `Speaker N` when uncertain and require human review before external use.
 - Use the minimum screenshots and quotations needed for any approved external use. Do not publish a complete transcript or visual reconstruction that substitutes for the source without a separate legal review.
 
-Read `LEGAL.md` before running this Skill on third-party, confidential, commercial, or sensitive material. These controls reduce risk but do not constitute legal advice.
+Read `LEGAL.en.md` before running this Skill on third-party, confidential, commercial, or sensitive material. These controls reduce risk but do not constitute legal advice.
 
 ## Route Model
 
@@ -174,7 +176,7 @@ For `conversation`, complete `work/speaker-map.json` before batches. Use evidenc
 4. Official episode pages.
 5. Earlier episodes from the same channel for recurring-host corroboration.
 
-Record `display_name`, role, confidence, and evidence. `high` requires explicit naming plus turn agreement; `medium` is a documented inference; `low` remains `说话人N`. Use timestamped `turn_overrides` when ASR merges people or changes labels for one person. Set `status=complete` only after checking handoffs throughout the video.
+Record `display_name`, role, confidence, and evidence. `high` requires explicit naming plus turn agreement; `medium` is a documented inference; `low` remains `Speaker N`. Use timestamped `turn_overrides` when ASR merges people or changes labels for one person. Set `status=complete` only after checking handoffs throughout the video.
 
 ### 6. Write complete scene notes
 

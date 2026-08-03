@@ -1,5 +1,7 @@
 # 视频内容 Pattern 与图文提取策略研究
 
+> [简体中文](video-pattern-research.zh-CN.md) | [English](video-pattern-research.md)
+
 ## 结论
 
 视频不应只按“PPT、科普、播客”三个频道式标签分类。真正影响图文提取效果的是两个正交维度：
