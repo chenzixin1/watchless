@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Extract audio and transcribe with Volcengine ASR by default."""
+"""Extract audio and transcribe with Tencent ASR by default."""
 
 from __future__ import annotations
 
@@ -165,6 +165,8 @@ def local_whisper_available():
 
 def select_transcription_provider(requested, api_key):
     """Resolve auto/explicit provider selection without making a network call."""
+    if requested in ("tencent", "auto"):
+        return "tencent"
     if requested == "volcengine":
         if not api_key:
             raise RuntimeError("Volcengine provider requires VOLCENGINE_API_KEY or --api-key")
@@ -176,15 +178,7 @@ def select_transcription_provider(requested, api_key):
                 "run `pip install -r scripts/requirements-whisper.txt`"
             )
         return "whisper"
-    if requested != "auto":
-        raise ValueError(f"Unknown transcription provider: {requested}")
-    if api_key:
-        return "volcengine"
-    raise RuntimeError(
-        "Volcengine key is missing. Set VOLCENGINE_API_KEY, pass --api-key, or point "
-        f"{LOCAL_CONFIG_ENV} at an existing config.py. Whisper is used only when "
-        "--provider whisper is explicitly requested."
-    )
+    raise ValueError(f"Unknown transcription provider: {requested}")
 
 
 def _audio_format(audio_path):
@@ -344,7 +338,7 @@ def normalized_word_transcript(result, provider="volcengine"):
     return {
         "text": result.get("result", {}).get("text", ""),
         "words": words,
-        "metadata": {"provider": provider, "word_timestamps": True},
+        "metadata": {**result.get("metadata", {}), "provider": provider, "word_timestamps": True},
     }
 
 
@@ -548,7 +542,7 @@ class LocalWhisperTranscriber(AudioTranscriber):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Transcribe local audio/video with Volcengine ASR (Whisper is explicit fallback only)."
+        description="Transcribe local audio/video with Tencent ASR and speaker diarization."
     )
     parser.add_argument("input_file", help="Path to a local audio or video file")
     parser.add_argument("--output", "-o", help="Transcript text output path")
@@ -563,9 +557,9 @@ def main():
     )
     parser.add_argument(
         "--provider",
-        choices=["auto", "volcengine", "whisper"],
-        default="volcengine",
-        help="Volcengine is the default; Whisper must be requested explicitly",
+        choices=["auto", "tencent", "volcengine", "whisper"],
+        default="tencent",
+        help="Tencent is the default; other providers must be requested explicitly",
     )
     parser.add_argument(
         "--whisper-model",
@@ -587,28 +581,34 @@ def main():
     parser.add_argument("--timeout", type=int, default=1800, help="HTTP timeout in seconds")
     args = parser.parse_args()
 
-    api_key, app_key, credential_source = resolve_volcengine_credentials(
-        cli_api_key=args.api_key or args.access_key,
-        cli_app_key=args.app_key,
-        config_path=args.volcengine_config,
-    )
+    api_key, app_key, credential_source = None, None, None
+    if args.provider == "volcengine":
+        api_key, app_key, credential_source = resolve_volcengine_credentials(
+            cli_api_key=args.api_key or args.access_key,
+            cli_app_key=args.app_key,
+            config_path=args.volcengine_config,
+        )
     try:
         provider = select_transcription_provider(args.provider, api_key)
     except (RuntimeError, ValueError) as exc:
         parser.error(str(exc))
 
-    if provider == "volcengine":
-        transcriber = AudioTranscriber(api_key=api_key, app_key=app_key, timeout=args.timeout)
-        print("Transcription provider: Volcengine ASR Flash")
-        print(f"Credential source: {credential_source}")
-    else:
-        transcriber = LocalWhisperTranscriber(
-            model_name=args.whisper_model,
-            language=args.lang,
-            device=args.whisper_device,
-        )
-        print("Transcription provider: local Whisper")
     try:
+        if provider == "tencent":
+            from tencent_asr import TencentTranscriber
+            transcriber = TencentTranscriber(timeout=args.timeout)
+            print("Transcription provider: Tencent Cloud ASR (speaker diarization enabled)")
+        elif provider == "volcengine":
+            transcriber = AudioTranscriber(api_key=api_key, app_key=app_key, timeout=args.timeout)
+            print("Transcription provider: Volcengine ASR Flash")
+            print(f"Credential source: {credential_source}")
+        else:
+            transcriber = LocalWhisperTranscriber(
+                model_name=args.whisper_model,
+                language=args.lang,
+                device=args.whisper_device,
+            )
+            print("Transcription provider: local Whisper")
         audio_path = transcriber.process_input_file(args.input_file)
         result = transcriber.recognize_audio(
             audio_path,

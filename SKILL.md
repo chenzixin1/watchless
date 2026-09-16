@@ -13,7 +13,7 @@ Turn one video into a complete visual article. The transcript is the factual sou
 
 - Run locally. Do not call PodSum, its website, MCP, Cloudflare, APIFY, D1, or R2.
 - Keep the source immutable and reuse cached downloads and transcripts.
-- Use Volcengine word-level ASR by default. Do not silently replace it with YouTube automatic captions or local Whisper.
+- Use Tencent Cloud word-level ASR with speaker diarization by default (`--provider tencent`; `auto` also selects Tencent). Never automatically fall back to Volcengine; select other providers explicitly. Do not silently replace it with YouTube automatic captions or local Whisper.
 - Keep the output chronological and complete. Light-plus is not a summary: preserve reasoning, examples, figures, caveats, disagreement, questions, answers, and repeated emphasis.
 - Show process images during the run: whole-video route overview, boundary evidence where applicable, candidate frames, selected frames, and PDF page overview.
 - Use no OpenCV anywhere in this Skill.
@@ -29,7 +29,7 @@ Before acquiring a remote source, confirm that the user owns the content, has pe
 - This repository and its outputs are private by default. Do not publish or distribute generated notes without a separate rights, privacy, confidentiality, and attribution review.
 - Chrome browser cookies may be read only from the user's local browser profile. Never export, print, copy, upload, log, or commit cookie values. Cookie access does not establish a right to download or reuse content.
 - Never use this Skill to bypass DRM, paywalls, members-only access, private-video access, geographic restrictions, CAPTCHAs, account enforcement, or other access controls.
-- Before sending non-public or sensitive audio to Volcengine, confirm that the user is authorized to make that third-party transfer. Use explicitly requested local Whisper or stop when authorization is unavailable.
+- Before sending non-public or sensitive audio to the selected cloud ASR provider, confirm that the user is authorized to make that third-party transfer. Use explicitly requested local Whisper or stop when authorization is unavailable.
 - Resolve speaker names only from explicit public metadata, self-introduction, lower thirds, or similarly reliable evidence. Do not perform face or voice biometric identification. Keep `Speaker N` when uncertain and require human review before external use.
 - Use the minimum screenshots and quotations needed for any approved external use. Do not publish a complete transcript or visual reconstruction that substitutes for the source without a separate legal review.
 
@@ -214,3 +214,7 @@ Finalize automatically writes `verify/quality-audit.json` and `verify/quality-au
 After the compliance gate is satisfied, try anonymous `yt-dlp`, then local Chrome browser cookies without exporting them. Do not use the cookie fallback to defeat access controls. Volcengine credentials may be discovered from the environment, `scripts/config.py`, or `WATCHLESS_VOLCENGINE_CONFIG`; never print or copy credential values. Use source/manual subtitles only with `--use-source-subtitles`. Use local Whisper only when explicitly requested with `--provider whisper`. If acquisition still fails, report the classified error and request an authorized local video.
 
 Stages are idempotent and resumable. `--target-seconds` is an explicit legacy fallback for non-slide modes, never the normal segmentation method.
+
+## Tencent ASR / 腾讯云通道
+
+See [references/tencent-asr.md](references/tencent-asr.md) for credentials, engine selection, resumable jobs and cross-chunk speaker-label limitations.

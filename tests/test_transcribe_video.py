@@ -79,15 +79,9 @@ class DirectUploadTests(unittest.TestCase):
                     transcriber.recognize_audio(audio.name)
             post.assert_not_called()
 
-    def test_auto_provider_prefers_volcengine_when_key_exists(self):
-        with patch.object(self.module, "local_whisper_available", return_value=True):
-            provider = self.module.select_transcription_provider("auto", "configured-key")
-        self.assertEqual(provider, "volcengine")
-
-    def test_auto_provider_requires_volcengine_key(self):
-        with patch.object(self.module, "local_whisper_available", return_value=True):
-            with self.assertRaisesRegex(RuntimeError, "Whisper is used only"):
-                self.module.select_transcription_provider("auto", None)
+    def test_auto_provider_selects_tencent_even_with_volcengine_key(self):
+        self.assertEqual(self.module.select_transcription_provider("auto", "configured-key"), "tencent")
+        self.assertEqual(self.module.select_transcription_provider("auto", None), "tencent")
 
     def test_local_config_credentials_are_discovered_without_exposing_value(self):
         with tempfile.TemporaryDirectory() as tmp:

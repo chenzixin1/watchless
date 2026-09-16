@@ -60,7 +60,7 @@ Watchless 将一条视频处理成一套可复核、可分享的内容资产：
 ![Watchless 项目流程图](assets/watchless-workflow.svg)
 
 1. 下载视频、字幕和 YouTube 元数据。
-2. 使用火山引擎词级 ASR 生成带时间戳的转录稿。
+2. 使用腾讯云词级 ASR 和说话人分离 生成带时间戳的转录稿。
 3. 查看全片概览，判断视频的内容组织方式。
 4. 按语义边界切分，而不是机械地每 60 或 90 秒切一段。
 5. 从每个语义场景生成候选帧，由 Codex 直接读取图片并选择关键帧。
@@ -123,7 +123,7 @@ python3 -m venv .venv
 - Google Chrome，用于 HTML 转 PDF
 - 本机可访问的 `video-use` Skill，用于转录打包和局部时间线检查
 
-本地 Whisper 只作为显式回退，不会静默替换火山 ASR：
+本地 Whisper 只作为显式回退，不会静默替换腾讯云 ASR：
 
 ```bash
 .venv/bin/pip install -r scripts/requirements-whisper.txt
@@ -138,7 +138,13 @@ ln -sfn "$(pwd)" "$HOME/.codex/skills/watchless"
 
 ## 配置和安全
 
-火山引擎词级 ASR 是默认转录路径。配置可以来自：
+腾讯云词级 ASR 是默认转录路径，默认启用说话人分离。`--provider tencent` 和 `--provider auto` 均使用腾讯云，失败不会自动切换服务商。
+
+配置环境变量 `TENCENTCLOUD_SECRET_ID` / `TENCENTCLOUD_SECRET_KEY`，或将 `secret_id` / `secret_key` 写入仓库外的 `~/.config/watchless/tencent.json`（文件权限 `0600`）。不要在命令行或 Git 中写入真实密钥。
+
+支持词级时间戳、长音频分段直传和任务续跑。说话人分离是文字中的匿名标签，不输出独立人声音轨；跨分段标签需要人工核验。完整说明见 [腾讯云通道](references/tencent-asr.md)。
+
+火山通道保留，仅在显式 `--provider volcengine` 时使用。火山配置可以来自：
 
 - 环境变量 `VOLCENGINE_API_KEY`
 - 本地未纳入 Git 的 `scripts/config.py`
@@ -150,7 +156,7 @@ ln -sfn "$(pwd)" "$HOME/.codex/skills/watchless"
 
 - Chrome Cookie 只允许程序从本机浏览器配置临时读取，不得导出、打印、上传或提交。
 - 不得使用本项目绕过 DRM、付费墙、会员限制、私人访问、地区限制、验证码或其他访问控制。
-- 默认火山引擎 ASR 会把音频发送给第三方服务；保密或敏感内容必须先确认授权，必要时显式改用本地 Whisper。
+- 默认腾讯云 ASR 会把音频发送给第三方服务；保密或敏感内容必须先确认授权，必要时显式改用本地 Whisper。
 - 说话人名称必须有可靠公开证据，无法确认时保留 `说话人N`，不得进行人脸或声纹生物识别。
 - 公开发布或商业使用前必须另行核对平台条款、版权、隐私、保密和署名要求。
 

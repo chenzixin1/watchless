@@ -22,7 +22,7 @@ Audio, images, names, voices, speaker labels, and identity inferences can be per
 
 ### 4. Third-party speech recognition
 
-By default, Volcengine ASR sends audio to a third-party service for processing. Users should confirm that they are permitted to make that transfer and review the applicable product terms, privacy policy, data-retention practices, and regional rules. For confidential material, sensitive personal information, or material without necessary authorization, use explicitly enabled local Whisper or stop processing.
+By default, Tencent Cloud ASR sends audio to a third-party service for processing. Users should confirm that they are permitted to make that transfer and review the applicable product terms, privacy policy, data-retention practices, and regional rules. For confidential material, sensitive personal information, or material without necessary authorization, use explicitly enabled local Whisper or stop processing.
 
 ### 5. Speaker misidentification and content accuracy
 

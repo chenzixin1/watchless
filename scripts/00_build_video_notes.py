@@ -407,9 +407,9 @@ def main() -> None:
     parser.add_argument(
         "--use-source-subtitles",
         action="store_true",
-        help="Use supplied/manual subtitles instead of the default Volcengine transcription",
+        help="Use supplied/manual subtitles instead of the default Tencent transcription",
     )
-    parser.add_argument("--provider", choices=["auto", "volcengine", "whisper"], default="volcengine")
+    parser.add_argument("--provider", choices=["auto", "tencent", "volcengine", "whisper"], default="tencent")
     parser.add_argument("--mode-samples", type=int, default=16)
     parser.add_argument(
         "--target-seconds",

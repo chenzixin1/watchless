@@ -15,7 +15,7 @@ description: 将 YouTube 链接或本地的 PPT、科普、访谈、播客、产
 
 - 全程本地运行，不调用 PodSum、网站、MCP、Cloudflare、APIFY、D1 或 R2。
 - 原视频不可变，重复运行必须复用已经下载的视频和转录稿。
-- 默认使用火山引擎词级 ASR，不得静默替换成 YouTube 自动字幕或本地 Whisper。
+- 默认使用腾讯云词级 ASR 和说话人分离（`--provider tencent`，`auto` 同样选择腾讯）；失败不得自动切换火山，其他通道必须显式指定，不得静默替换成 YouTube 自动字幕或本地 Whisper。
 - 内容必须按原顺序完整保留。Light-plus 不是摘要：保留推理、例子、数字、限定条件、分歧、问答和重复强调。
 - 运行过程中展示全片路由概览、边界证据、候选帧、最终帧和 PDF 页面概览。
 - 本 Skill 任何路径都不使用 OpenCV。
@@ -31,7 +31,7 @@ description: 将 YouTube 链接或本地的 PPT、科普、访谈、播客、产
 - 本仓库及其输出默认保持私人。未经单独完成版权、隐私、保密和署名复核，不得公开发布或分发生成结果。
 - Chrome Cookie 只能从用户本机浏览器配置中读取；不得导出、打印、复制、上传、写入日志或提交到 Git。能够读取 Cookie 不代表拥有下载或再利用权。
 - 不得使用本 Skill 绕过 DRM、付费墙、会员限制、私人视频权限、地区限制、验证码、账号处罚或其他访问控制。
-- 把未公开或敏感音频发送给火山引擎前，必须确认用户有权进行该第三方传输。无法确认时，改用用户显式要求的本地 Whisper，或停止处理。
+- 把未公开或敏感音频发送给选定云 ASR 服务前，必须确认用户有权进行该第三方传输。无法确认时，改用用户显式要求的本地 Whisper，或停止处理。
 - 说话人姓名只能依据明确的公开元数据、自我介绍、姓名条或同等可靠证据；不得进行人脸或声纹生物识别。无法确认时保留 `说话人N`，对外使用前必须人工复核。
 - 经批准对外使用时，只保留实现说明目的所必要的截图和引文。未经单独法律审查，不得发布足以替代原内容的完整转录或完整图文复刻。
 
@@ -216,3 +216,7 @@ Finalize 会自动生成 `verify/quality-audit.json` 和 `verify/quality-audit.m
 通过合规闸门后，YouTube 先匿名运行 `yt-dlp`，再使用本机 Chrome 浏览器 Cookie，但不导出 Cookie，也不得借此规避访问控制。火山凭据可以从环境变量、`scripts/config.py` 或 `WATCHLESS_VOLCENGINE_CONFIG` 发现；不得打印或复制凭据。只有显式 `--use-source-subtitles` 才使用来源/人工字幕；只有显式 `--provider whisper` 才使用本地 Whisper。仍无法下载时，说明错误分类并请求已获授权的本地视频。
 
 所有阶段都可重复执行和断点续跑。`--target-seconds` 只是非 slides 模式的旧兼容回退，绝不是正常切分方法。
+
+## Tencent ASR / 腾讯云通道
+
+See [references/tencent-asr.md](references/tencent-asr.md) for credentials, engine selection, resumable jobs and cross-chunk speaker-label limitations.

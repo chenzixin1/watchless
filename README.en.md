@@ -60,7 +60,7 @@ Watchless converts one video into a set of reviewable, shareable content assets:
 ![Watchless workflow](assets/watchless-workflow.en.svg)
 
 1. Download the video, subtitles, and YouTube metadata.
-2. Create a timestamped transcript with Volcengine word-level ASR.
+2. Create a timestamped transcript with Tencent Cloud word-level ASR and speaker diarization.
 3. Inspect a whole-video overview to determine how the video is organized.
 4. Segment on semantic boundaries, rather than mechanically every 60 or 90 seconds.
 5. Generate candidate frames for each semantic scene; Codex reads the images directly and selects keyframes.
@@ -123,7 +123,7 @@ System dependencies:
 - Google Chrome, for HTML-to-PDF conversion
 - A locally accessible `video-use` Skill, for transcript packing and targeted timeline inspection
 
-Local Whisper is an explicit fallback only; it never silently replaces Volcengine ASR:
+Local Whisper is an explicit fallback only; it never silently replaces Tencent Cloud ASR:
 
 ```bash
 .venv/bin/pip install -r scripts/requirements-whisper.txt
@@ -138,7 +138,13 @@ ln -sfn "$(pwd)" "$HOME/.codex/skills/watchless"
 
 ## Configuration and safety
 
-Volcengine word-level ASR is the default transcription route. Configuration can come from:
+Tencent Cloud word-level ASR with speaker diarization is the default. Both `--provider tencent` and `--provider auto` select Tencent, with no automatic provider fallback.
+
+Set `TENCENTCLOUD_SECRET_ID` / `TENCENTCLOUD_SECRET_KEY`, or store JSON keys `secret_id` / `secret_key` in `~/.config/watchless/tencent.json` outside the repository (mode `0600`). Never put real credentials in command lines or Git.
+
+The channel supports word timestamps, chunked direct uploads and resumable tasks. Diarization labels anonymous speakers in text; it does not export isolated voice tracks. Speaker labels across chunks require review. See [Tencent ASR](references/tencent-asr.md) for details.
+
+Volcengine remains available with explicit `--provider volcengine`. Its configuration can come from:
 
 - The `VOLCENGINE_API_KEY` environment variable
 - A local, untracked `scripts/config.py`
@@ -150,7 +156,7 @@ Never commit real API keys, browser cookies, downloaded videos, raw transcripts,
 
 - Chrome cookies may be read transiently only from the local browser profile; never export, print, upload, or commit them.
 - Do not use this project to bypass DRM, paywalls, membership limits, private access, regional restrictions, CAPTCHAs, or other access controls.
-- The default Volcengine ASR sends audio to a third-party service. Confirm authorization before sending confidential or sensitive material; explicitly use local Whisper when appropriate.
+- The default Tencent Cloud ASR sends audio to a third-party service. Confirm authorization before sending confidential or sensitive material; explicitly use local Whisper when appropriate.
 - Speaker names require reliable public evidence. When a speaker cannot be verified, retain `Speaker N`; do not perform face or voice biometric identification.
 - Before publishing or using material commercially, independently review the platform terms, copyright, privacy, confidentiality, and attribution requirements.
 
