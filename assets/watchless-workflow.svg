@@ -45,7 +45,7 @@
     <text x="100" y="278" class="font label">YouTube URL</text>
     <text x="100" y="312" class="font small">或本地 video.mp4</text>
     <text x="100" y="353" class="font small">字幕 / 元数据 / 原视频</text>
-    <text x="100" y="382" class="font tiny">源文件保持不变，重复运行复用缓存</text>
+    <text x="100" y="382" class="font tiny">保留原文件 · 复用缓存</text>
   </g>
 
   <path d="M350 290 H420" fill="none" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow)"/>
@@ -57,8 +57,9 @@
     <text x="607" y="211" text-anchor="middle" class="font section">准备阶段</text>
     <text x="470" y="279" class="font label">下载 + 字幕 + 全片概览</text>
     <text x="470" y="315" class="font small">本地 yt-dlp / ffmpeg</text>
-    <text x="470" y="345" class="font small">火山引擎词级 ASR</text>
-    <text x="470" y="375" class="font small">mode-overview.jpg + transcript</text>
+    <text x="470" y="345" class="font small">腾讯云 ASR（默认）</text>
+    <text x="470" y="369" class="font small">词级时间戳 · 说话人分离</text>
+    <text x="470" y="392" class="font tiny">mode-overview.jpg + transcript</text>
   </g>
 
   <path d="M790 290 H860" fill="none" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow)"/>

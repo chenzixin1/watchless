@@ -45,7 +45,7 @@
     <text x="100" y="278" class="font label">YouTube URL</text>
     <text x="100" y="312" class="font small">or local video.mp4</text>
     <text x="100" y="353" class="font small">subtitles / metadata / video</text>
-    <text x="100" y="382" class="font tiny">Source stays immutable; runs reuse cache</text>
+    <text x="100" y="382" class="font tiny">Original preserved · Cached runs</text>
   </g>
 
   <path d="M350 290 H420" fill="none" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow)"/>
@@ -57,8 +57,9 @@
     <text x="607" y="211" text-anchor="middle" class="font section">Prepare</text>
     <text x="470" y="279" class="font label">Download + subs + overview</text>
     <text x="470" y="315" class="font small">local yt-dlp / ffmpeg</text>
-    <text x="470" y="345" class="font small">Volcengine word-level ASR</text>
-    <text x="470" y="375" class="font small">mode-overview.jpg + transcript</text>
+    <text x="470" y="345" class="font small">Tencent Cloud ASR (default)</text>
+    <text x="470" y="369" class="font small">Word timestamps · Diarization</text>
+    <text x="470" y="392" class="font tiny">mode-overview.jpg + transcript</text>
   </g>
 
   <path d="M790 290 H860" fill="none" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow)"/>
@@ -68,10 +69,10 @@
     <rect x="875" y="175" width="330" height="55" rx="22" fill="#2563eb"/>
     <rect x="875" y="208" width="330" height="22" fill="#2563eb"/>
     <text x="1040" y="211" text-anchor="middle" class="font section">Codex review</text>
-    <text x="910" y="279" class="font label">Read images + text + choose route</text>
-    <text x="910" y="315" class="font small">Content structure sets boundaries</text>
-    <text x="910" y="345" class="font small">speakers / evidence / B-roll / UI</text>
-    <text x="910" y="375" class="font small">Select what a keyframe must show</text>
+    <text x="910" y="279" class="font label" style="font-size:17px">Read images + text; choose route</text>
+    <text x="910" y="315" class="font small">Structure sets scene boundaries</text>
+    <text x="910" y="345" class="font small">Speakers / evidence / B-roll / UI</text>
+    <text x="910" y="375" class="font small">Choose what each frame shows</text>
   </g>
 
   <path d="M1215 290 H1280" fill="none" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow)"/>
